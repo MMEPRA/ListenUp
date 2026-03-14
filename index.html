@@ -445,19 +445,18 @@ function renderTranslate(q){
   document.getElementById('qTypeLabel').textContent='🎧 Listen → find the French translation';
   setWaves(true);
   buildQCM(w.fr, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.fr), w);
-  setTimeout(()=>speak(w.en),350);
+  scheduledSpeak(w.en);
 }
 
-/* ── HEAR THE SITUATION (cognitif) ── */
+/* ── HEAR THE SITUATION ── */
 function renderSituation(q){
   document.getElementById('qTypeLabel').textContent='🎬 Listen to the situation → find the word';
   setWaves(true);
-  // Show question text hint only after audio plays
   const txt=document.getElementById('qText');
   txt.innerHTML='❓ Which word describes this situation?';
   txt.style.display='block';
   buildQCM(q.answer, q.wrong, {en:q.answer, fr:q.fr, ex:null});
-  setTimeout(()=>speak(q.spoken),350);
+  scheduledSpeak(q.spoken, 400);
 }
 
 /* ── DEFINITION ── */
@@ -466,7 +465,7 @@ function renderDefinition(q){
   document.getElementById('qTypeLabel').textContent='🧠 Listen to the definition → find the word';
   setWaves(true);
   buildQCM(w.en, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.en), w);
-  setTimeout(()=>speak(w.def),350);
+  scheduledSpeak(w.def, 400);
 }
 
 /* ── DICTÉE ── */
@@ -479,7 +478,8 @@ function renderDictee(q){
   const inp=document.getElementById('dictInput');
   inp.value=''; inp.className='dict-input'; inp.dataset.word=JSON.stringify(w);
   inp.onkeydown=e=>{if(e.key==='Enter')checkDictee();};
-  setTimeout(()=>{speak(w.en); inp.focus();},350);
+  scheduledSpeak(w.en, 350);
+  setTimeout(()=>inp.focus(), 400);
 }
 
 function checkDictee(){
@@ -516,8 +516,7 @@ function checkDictee(){
     S.waiting=true;
   } else {
     inp.className='dict-input bad';
-    // Speak the correct answer so they hear it
-    setTimeout(()=>speak(w.en), 600);
+    scheduledSpeak(w.en, 700);
     handleResult(false,w.en,w);
   }
 }
@@ -544,8 +543,7 @@ function handleAns(btn,answer,correct,word){
   else{
     btn.classList.add('wrong');
     document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.ans===correct)b.classList.add('correct');});
-    // Speak correct answer after wrong QCM answer
-    setTimeout(()=>speak(correct),700);
+    scheduledSpeak(correct, 800);
   }
   handleResult(ok,correct,word);
 }
@@ -557,19 +555,29 @@ function handleResult(ok,correct,word){
     if(S.streak>S.maxStreak)S.maxStreak=S.streak;
     G.xp+=10; saveG(); doFlash('ok'); SFX.ok();
     const sub=word&&word.fr?`✅ ${word.en} = ${word.fr}`:'✅ Correct!';
-    const note=word&&word.def&&S.mode==='definition'?`"${word.def}"`:'';
-    showFb(true,'Correct! +10 XP',sub,note);
+    const note=word&&word.def&&S.mode==='definition'?`💬 "${word.def}"`:'';
+    // Pick encouragement — combo message at streak milestones
+    const enc = S.streak>=4 ? COMBO_MSGS[(S.streak-4)%COMBO_MSGS.length]
+               : ENCOURAGEMENTS[Math.floor(Math.random()*ENCOURAGEMENTS.length)];
+    showFb(true, `${enc} +10 XP`, sub, note);
     if(word&&word.ex) showExample(`"${word.ex}"`);
   } else {
     S.streak=0; S.hearts=Math.max(0,S.hearts-1);
     SFX.bad(); doFlash('bad');
-    showFb(false,'Not quite!',`✅ Answer: ${correct}`,'🔊 Listen carefully to the correct answer');
+    showFb(false,'Not quite!',`✅ Answer: ${correct}`,'🔊 Listen to the correct answer');
     if(S.hearts<=0){setTimeout(()=>endGame(true),2200);return;}
   }
   updateHUD(); saveG(); S.waiting=true;
 }
 
-function nextQ(){SFX.click();S.idx++;S.waiting=false;renderQ();}
+function nextQ(){
+  SFX.click();
+  // Cancel any pending audio before moving on
+  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
+  if(currentAudio){currentAudio.pause();currentAudio.src='';currentAudio=null;}
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+  S.idx++;S.waiting=false;renderQ();
+}
 
 /* ── Replay ── */
 function replayAudio(){
@@ -611,28 +619,34 @@ const EL_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const audioCache = {};
 let currentAudio = null;
 
-function voiceForMode(mode){
-  if(mode==='definition') return EL_VOICES.male_brit;
-  if(mode==='dictee')     return EL_VOICES.blondie;
-  return EL_VOICES.christina;
+// Speech rate by mode
+function rateForMode(mode){
+  if(mode==='definition') return 0.82;
+  if(mode==='situation')  return 0.78;
+  if(mode==='dictee')     return 0.75;
+  return 0.92; // translate: energetic, natural pace
 }
 
-// Speech rate by mode — slower for longer content
-function rateForMode(mode){
-  if(mode==='definition') return 0.78; // definitions are long, speak slowly
-  if(mode==='situation')  return 0.75; // situations are longest, speak very clearly
-  if(mode==='dictee')     return 0.70; // dictée: slower so students can write
-  return 0.82; // translate: normal pace
-}
+// Encouragement messages — short, punchy, professional
+const ENCOURAGEMENTS=[
+  "Well done!", "Excellent!", "Keep it up!", "Great work!",
+  "Spot on!", "Brilliant!", "You've got it!", "Nice one!",
+  "Perfect!", "Outstanding!", "Sharp ears!", "Nailed it!"
+];
+const COMBO_MSGS=["Amazing streak!","On fire!","Unstoppable!","Top student!"];
+let speakTimer=null; // track pending speak timeout to cancel it
 
 async function speak(t){
-  if(currentAudio){ currentAudio.pause(); currentAudio=null; }
-  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  // Cancel any pending scheduled speak
+  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
+  // Stop current audio immediately
+  if(currentAudio){currentAudio.pause();currentAudio.src='';currentAudio=null;}
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
   setWaves(true);
 
   const voiceId  = voiceForMode(S.mode||'translate');
   const rate     = rateForMode(S.mode||'translate');
-  const cacheKey = voiceId+'|'+rate+'|'+t;
+  const cacheKey = voiceId+'|'+t;
 
   try {
     let url = audioCache[cacheKey];
@@ -648,11 +662,11 @@ async function speak(t){
           text: t,
           model_id: 'eleven_multilingual_v2',
           voice_settings: {
-            stability: 0.55,
+            stability: 0.50,
             similarity_boost: 0.80,
-            style: 0.15,
+            style: 0.20,
             use_speaker_boost: true,
-            speed: rate   // ElevenLabs v2 supports speed parameter
+            speed: rate
           }
         })
       });
@@ -665,11 +679,16 @@ async function speak(t){
     currentAudio = audio;
     audio.onended = ()=>{ setWaves(false); currentAudio=null; };
     audio.onerror = ()=>{ setWaves(false); speakFallback(t); };
-    audio.play();
+    await audio.play();
   } catch(err){
     console.warn('ElevenLabs unavailable:', err);
     speakFallback(t);
   }
+}
+
+function scheduledSpeak(t, delay=350){
+  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
+  speakTimer=setTimeout(()=>{ speakTimer=null; speak(t); }, delay);
 }
 
 // Fallback: browser speechSynthesis
