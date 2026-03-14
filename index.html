@@ -619,6 +619,12 @@ const EL_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const audioCache = {};
 let currentAudio = null;
 
+function voiceForMode(mode){
+  if(mode==='definition') return EL_VOICES.male_brit;
+  if(mode==='dictee')     return EL_VOICES.blondie;
+  return EL_VOICES.christina;
+}
+
 // Speech rate by mode
 function rateForMode(mode){
   if(mode==='definition') return 0.82;
