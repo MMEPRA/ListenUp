@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ListenUp!</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#58CC02; --green-dk:#45A800; --green-bg:#1a3a0a;
+  --blue:#1CB0F6;  --blue-dk:#0A91D4;  --blue-bg:#0a2233;
+  --red:#FF4B4B;   --red-dk:#CC2222;   --red-bg:#3a0f0f;
+  --yellow:#FFC800;--yellow-dk:#E5A800;--yellow-bg:#332600;
+  --orange:#FF9600;--orange-bg:#331f00;
+  --teal:#00d4aa;  --teal-dk:#00a882;  --teal-bg:#00332a;
+  --purple:#b07edc;--purple-bg:#1f0a33;
+  --g50:#0d1b26; --g100:#1a2d3d; --g200:#253d52;
+  --g400:#4a6a80; --g600:#7fa8c0; --text:#e8f4fc; --card:#162536;
+  --sh:0 2px 0 rgba(0,0,0,.4); --sh2:0 4px 0 rgba(0,0,0,.5);
+  --r:16px; --rs:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--g50);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══ HOME ══ */
+#homeScreen{background:var(--card);align-items:center;padding:24px 20px 40px;gap:0;}
+.hero{text-align:center;padding:10px 0 22px;}
+.hero-icon{font-size:5rem;display:block;animation:pulse 2s ease-in-out infinite;margin-bottom:8px;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.hero-title{font-family:'Fredoka One',cursive;font-size:clamp(2rem,6vw,2.8rem);color:var(--teal);margin-bottom:4px;}
+.hero-sub{font-size:.82rem;color:var(--g600);font-weight:800;letter-spacing:2.5px;text-transform:uppercase;}
+
+.mode-list{display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px;margin-bottom:24px;}
+.mode-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--g100);border:2px solid var(--g200);border-radius:var(--r);cursor:pointer;transition:all .15s cubic-bezier(.34,1.4,.64,1);box-shadow:var(--sh);position:relative;overflow:hidden;}
+.mode-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.mode-card.m1::after{background:var(--teal);}
+.mode-card.m2::after{background:var(--blue);}
+.mode-card.m3::after{background:var(--orange);}
+.mode-card.m4::after{background:var(--purple);}
+.mode-card:hover{transform:translateY(-3px);box-shadow:var(--sh2);}
+.mode-card:active{transform:translateY(1px);}
+.mode-icon{font-size:1.9rem;width:40px;text-align:center;flex-shrink:0;}
+.mode-info{flex:1;}
+.mode-name{font-family:'Fredoka One',cursive;font-size:1.1rem;margin-bottom:2px;}
+.mode-desc{font-size:.75rem;color:var(--g600);font-weight:700;}
+.mode-badge{font-family:'Fredoka One',cursive;font-size:.72rem;padding:3px 11px;border-radius:20px;border:1.5px solid;flex-shrink:0;}
+.b-teal  {background:var(--teal-bg);  color:var(--teal);   border-color:var(--teal);}
+.b-blue  {background:var(--blue-bg);  color:var(--blue);   border-color:var(--blue);}
+.b-orange{background:var(--orange-bg);color:var(--orange); border-color:var(--orange);}
+.b-purple{background:var(--purple-bg);color:var(--purple); border-color:var(--purple);}
+
+.stats-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.stat-chip{display:flex;align-items:center;gap:5px;border:2px solid;border-radius:30px;padding:5px 13px;font-family:'Fredoka One',cursive;font-size:.92rem;}
+.sc-xp    {border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow);}
+.sc-best  {border-color:var(--teal);  background:var(--teal-bg);  color:var(--teal);}
+
+/* ══ GAME ══ */
+#gameScreen{background:var(--g50);}
+
+.g-top{background:var(--card);border-bottom:2px solid var(--g100);padding:9px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.btn-x{width:34px;height:34px;border:none;background:var(--g100);border-radius:8px;cursor:pointer;font-size:.95rem;color:var(--g600);display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+.btn-x:hover{background:var(--g200);}
+.g-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--text);flex:1;text-align:center;}
+.prog-wrap{flex:1;height:13px;background:var(--g100);border-radius:20px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:20px;transition:width .5s cubic-bezier(.34,1.2,.64,1);}
+.hearts{display:flex;align-items:center;gap:2px;background:var(--red-bg);border:2px solid var(--red-dk);border-radius:20px;padding:3px 9px;font-size:.9rem;font-weight:900;color:var(--red);flex-shrink:0;}
+.streak{display:flex;align-items:center;gap:2px;background:var(--orange-bg);border:2px solid var(--orange);border-radius:20px;padding:3px 9px;font-family:'Fredoka One',cursive;font-size:.85rem;color:var(--orange);flex-shrink:0;}
+
+.timer-strip{height:5px;flex-shrink:0;background:var(--g100);}
+.timer-fill{height:100%;background:var(--teal);width:100%;transition:width .1s linear,background .3s;}
+
+.g-body{flex:1;overflow-y:auto;padding:16px 16px 130px;display:flex;flex-direction:column;gap:12px;max-width:600px;margin:0 auto;width:100%;}
+
+/* Mode label chip */
+.mode-chip{align-self:flex-start;font-family:'Fredoka One',cursive;font-size:.72rem;padding:3px 11px;border-radius:20px;border:2px solid;}
+
+/* ── LISTEN CARD ── */
+.listen-card{background:var(--card);border:2px solid var(--g200);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:var(--sh);}
+.q-type-label{font-size:.7rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--g600);margin-bottom:12px;}
+
+/* Sound waves animation */
+.sound-visual{display:flex;align-items:center;justify-content:center;gap:0;margin:0 auto 16px;position:relative;width:200px;height:90px;}
+.wave-ring{position:absolute;border-radius:50%;border:3px solid var(--teal);opacity:0;animation:waveOut 2s ease-out infinite;}
+.wave-ring:nth-child(1){width:60px;height:60px;animation-delay:0s;}
+.wave-ring:nth-child(2){width:95px;height:95px;animation-delay:.4s;}
+.wave-ring:nth-child(3){width:130px;height:130px;animation-delay:.8s;}
+.wave-ring:nth-child(4){width:165px;height:165px;animation-delay:1.2s;}
+@keyframes waveOut{0%{opacity:.8;transform:scale(.6)}100%{opacity:0;transform:scale(1)}}
+.sound-visual.paused .wave-ring{animation-play-state:paused;opacity:0;}
+
+.play-btn{width:72px;height:72px;border-radius:50%;background:var(--teal);border:none;border-bottom:5px solid var(--teal-dk);cursor:pointer;font-size:2rem;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:2;flex-shrink:0;}
+.play-btn:hover{transform:scale(1.08);}
+.play-btn:active{transform:scale(.95);border-bottom-width:2px;}
+
+.play-hint{font-size:.75rem;color:var(--g600);font-weight:800;margin-bottom:4px;}
+
+/* Question text (for phrase/definition modes) */
+.q-text{font-family:'Fredoka One',cursive;font-size:clamp(1.1rem,3.5vw,1.5rem);color:var(--text);line-height:1.3;margin-bottom:4px;}
+.q-blank{color:var(--teal);text-decoration:underline;text-underline-offset:4px;}
+.q-ctx{font-size:.8rem;color:var(--g600);font-weight:800;margin-top:5px;font-style:italic;}
+
+/* Dictée input */
+.dict-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;}
+.dict-input{width:100%;max-width:320px;background:var(--g100);border:2px solid var(--g200);border-radius:var(--rs);padding:13px 16px;font-family:'Nunito',sans-serif;font-size:1.15rem;font-weight:800;color:var(--text);text-align:center;outline:none;transition:border-color .15s;}
+.dict-input:focus{border-color:var(--teal);}
+.dict-input.ok  {border-color:var(--green); background:var(--green-bg); color:var(--green);}
+.dict-input.bad {border-color:var(--red);   background:var(--red-bg);   color:var(--red);}
+.dict-input.near{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow);}
+.btn-check{font-family:'Fredoka One',cursive;font-size:1rem;background:var(--teal);border:none;border-bottom:4px solid var(--teal-dk);border-radius:var(--rs);padding:10px 28px;color:white;cursor:pointer;transition:all .12s;}
+.btn-check:hover{transform:translateY(-2px);}
+.btn-check:active{transform:translateY(1px);border-bottom-width:2px;}
+
+/* Answer grid */
+.ans-grid{display:flex;flex-direction:column;gap:8px;}
+.ans-btn{display:flex;align-items:center;gap:11px;background:var(--card);border:2px solid var(--g200);border-bottom:4px solid var(--g200);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:all .12s;text-align:left;font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(.88rem,2.5vw,.98rem);color:var(--text);width:100%;}
+.ans-btn:hover:not(:disabled){border-color:var(--teal);border-bottom-color:var(--teal-dk);background:var(--teal-bg);transform:translateY(-1px);}
+.ans-btn.correct{background:var(--green-bg)!important;border-color:var(--green)!important;border-bottom-color:var(--green-dk)!important;color:var(--green);}
+.ans-btn.wrong  {background:var(--red-bg)!important;  border-color:var(--red)!important;  border-bottom-color:var(--red-dk)!important;  color:var(--red);}
+.ans-key{width:28px;height:28px;flex-shrink:0;background:var(--g100);border:2px solid var(--g200);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:.8rem;color:var(--g600);}
+.ans-btn.correct .ans-key{background:var(--green);border-color:var(--green-dk);color:white;}
+.ans-btn.wrong   .ans-key{background:var(--red);  border-color:var(--red-dk);  color:white;}
+
+/* Example sentence shown after answer */
+.example-box{display:none;background:var(--teal-bg);border:1.5px solid var(--teal);border-radius:var(--rs);padding:8px 14px;font-size:.8rem;font-weight:800;color:var(--teal);font-style:italic;text-align:center;}
+.example-box.show{display:block;}
+
+/* Feedback bar */
+.fb-bar{position:fixed;bottom:0;left:0;right:0;padding:14px 18px;z-index:300;display:flex;align-items:center;justify-content:space-between;gap:12px;transform:translateY(100%);transition:transform .25s cubic-bezier(.34,1.2,.64,1);border-top:3px solid transparent;}
+.fb-bar.show{transform:translateY(0);}
+.fb-bar.ok {background:#1a3a0a;border-top-color:var(--green);}
+.fb-bar.bad{background:#3a0f0f;border-top-color:var(--red);}
+.fb-left{display:flex;align-items:center;gap:9px;flex:1;min-width:0;}
+.fb-icon{font-size:1.6rem;flex-shrink:0;}
+.fb-title{font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--text);}
+.fb-sub  {font-size:.77rem;color:var(--g600);font-weight:800;margin-top:1px;}
+.fb-note {font-size:.77rem;font-weight:800;margin-top:2px;}
+.fb-bar.ok  .fb-note{color:var(--green);}
+.fb-bar.bad .fb-note{color:var(--red);}
+.btn-cont{font-family:'Fredoka One',cursive;font-size:.95rem;padding:11px 22px;border:none;border-bottom:4px solid transparent;border-radius:var(--rs);cursor:pointer;transition:all .12s;flex-shrink:0;text-transform:uppercase;}
+.fb-bar.ok  .btn-cont{background:var(--green);border-bottom-color:var(--green-dk);color:white;}
+.fb-bar.bad .btn-cont{background:var(--red);  border-bottom-color:var(--red-dk);  color:white;}
+.btn-cont:hover {transform:translateY(-2px);}
+.btn-cont:active{transform:translateY(1px);border-bottom-width:2px;}
+
+.flash{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0;transition:opacity .1s;}
+.flash.ok {background:rgba(88,204,2,.12);}
+.flash.bad{background:rgba(255,75,75,.12);}
+.flash.on {opacity:1;}
+
+/* ══ RESULTS ══ */
+#resultsScreen{background:var(--card);align-items:center;justify-content:center;gap:14px;padding:30px 20px;text-align:center;}
+.res-big{font-size:5rem;animation:twig 1.5s ease-in-out infinite;}
+@keyframes twig{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)scale(1.05)}}
+.res-xp  {font-family:'Fredoka One',cursive;font-size:3rem;color:var(--yellow);}
+.res-stars{font-size:2.2rem;letter-spacing:4px;}
+.res-msg {font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--text);}
+.res-mode{font-size:.8rem;color:var(--g600);font-weight:800;letter-spacing:1.5px;text-transform:uppercase;}
+.res-stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.res-stat{background:var(--g100);border:2px solid var(--g200);border-radius:var(--rs);padding:10px 18px;text-align:center;}
+.rs-lbl{font-size:.65rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--g600);margin-bottom:2px;}
+.rs-val{font-family:'Fredoka One',cursive;font-size:1.5rem;}
+.res-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+.btn{font-family:'Fredoka One',cursive;font-size:.95rem;border:none;border-bottom:4px solid transparent;border-radius:var(--rs);padding:12px 24px;cursor:pointer;transition:all .12s;text-transform:uppercase;}
+.btn:hover {transform:translateY(-2px);}
+.btn:active{transform:translateY(1px);border-bottom-width:2px;}
+.btn-teal{background:var(--teal); border-bottom-color:var(--teal-dk);color:white;}
+.btn-gray{background:var(--g100); border-bottom-color:var(--g200);   color:var(--g600);}
+
+.confetti-p{position:fixed;pointer-events:none;z-index:9999;border-radius:3px;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(-10px)rotate(0);opacity:1}100%{transform:translateY(105vh)rotate(720deg);opacity:0}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--g100);}::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="flash" id="flash"></div>
+
+<!-- ══ HOME ══ -->
+<div class="screen active" id="homeScreen">
+  <div class="hero">
+    <span class="hero-icon">🎧</span>
+    <div class="hero-title">ListenUp!</div>
+    <div class="hero-sub">Train your ear · Shop English</div>
+  </div>
+
+  <div class="mode-list">
+    <div class="mode-card m1" onclick="startGame('translate')">
+      <div class="mode-icon">🔊</div>
+      <div class="mode-info">
+        <div class="mode-name">Hear &amp; Translate</div>
+        <div class="mode-desc">Listen to the word → find the French translation</div>
+      </div>
+      <div class="mode-badge b-teal">PLAY</div>
+    </div>
+    <div class="mode-card m2" onclick="startGame('phrase')">
+      <div class="mode-icon">💬</div>
+      <div class="mode-info">
+        <div class="mode-name">Hear the Phrase</div>
+        <div class="mode-desc">Listen to a pro sentence → find the missing word</div>
+      </div>
+      <div class="mode-badge b-blue">PLAY</div>
+    </div>
+    <div class="mode-card m3" onclick="startGame('definition')">
+      <div class="mode-icon">🧠</div>
+      <div class="mode-info">
+        <div class="mode-name">Hear the Definition</div>
+        <div class="mode-desc">Listen to the meaning → find the English word</div>
+      </div>
+      <div class="mode-badge b-orange">PLAY</div>
+    </div>
+    <div class="mode-card m4" onclick="startGame('dictee')">
+      <div class="mode-icon">✍️</div>
+      <div class="mode-info">
+        <div class="mode-name">Dictée</div>
+        <div class="mode-desc">Listen and type the word you hear — no hints!</div>
+      </div>
+      <div class="mode-badge b-purple">HARD</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-chip sc-xp">⭐ <span id="hXP">0</span> XP</div>
+    <div class="stat-chip sc-best">🏆 Best: <span id="hBest">0</span></div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="gameScreen">
+  <div class="g-top">
+    <button class="btn-x" onclick="goHome()">✕</button>
+    <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="hearts" id="heartsEl">❤️❤️❤️❤️❤️</div>
+    <div class="streak" id="streakEl">🔥0</div>
+  </div>
+  <div class="timer-strip"><div class="timer-fill" id="timerFill"></div></div>
+
+  <div class="g-body">
+    <span class="mode-chip" id="modeChip"></span>
+
+    <div class="listen-card" id="listenCard">
+      <div class="q-type-label" id="qTypeLabel">🎧 LISTEN AND TRANSLATE</div>
+
+      <!-- Sound waves + play button -->
+      <div class="sound-visual paused" id="soundVisual">
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <button class="play-btn" id="playBtn" onclick="replayAudio()">🔊</button>
+      </div>
+      <div class="play-hint" id="playHint">Tap 🔊 to hear again</div>
+
+      <!-- Phrase / definition text (hidden in translate mode) -->
+      <div class="q-text" id="qText" style="display:none"></div>
+      <div class="q-ctx"  id="qCtx"  style="display:none"></div>
+    </div>
+
+    <!-- QCM answers -->
+    <div class="ans-grid" id="ansGrid"></div>
+
+    <!-- Dictée input -->
+    <div class="dict-wrap" id="dictWrap" style="display:none">
+      <input class="dict-input" id="dictInput" placeholder="Type what you hear..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <button class="btn-check" onclick="checkDictee()">CHECK ✓</button>
+    </div>
+
+    <!-- Example sentence after correct answer -->
+    <div class="example-box" id="exampleBox"></div>
+  </div>
+
+  <div class="fb-bar" id="fbBar">
+    <div class="fb-left">
+      <div class="fb-icon"  id="fbIcon">🎉</div>
+      <div>
+        <div class="fb-title" id="fbTitle">Correct!</div>
+        <div class="fb-sub"   id="fbSub"></div>
+        <div class="fb-note"  id="fbNote"></div>
+      </div>
+    </div>
+    <button class="btn-cont" onclick="nextQ()">CONTINUE</button>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="resultsScreen">
+  <div class="res-big"   id="resBig">🏆</div>
+  <div class="res-xp"    id="resXP">0 XP</div>
+  <div class="res-stars" id="resStars">⭐⭐⭐</div>
+  <div class="res-msg"   id="resMsg">Perfect listening!</div>
+  <div class="res-mode"  id="resMode"></div>
+  <div class="res-stats">
+    <div class="res-stat"><div class="rs-lbl">Correct</div><div class="rs-val" id="rsCorrect" style="color:var(--green)">0</div></div>
+    <div class="res-stat"><div class="rs-lbl">Max Streak</div><div class="rs-val" id="rsStreak" style="color:var(--orange)">0🔥</div></div>
+    <div class="res-stat"><div class="rs-lbl">Accuracy</div><div class="rs-val" id="rsAccuracy" style="color:var(--teal)">0%</div></div>
+  </div>
+  <div class="res-btns">
+    <button class="btn btn-gray"  onclick="goHome()">🏠 Home</button>
+    <button class="btn btn-teal"  id="btnAgain" onclick="replayLast()">🔄 Again</button>
+  </div>
+</div>
+
+<script>
+/* ══ AUDIO ENGINE ══ */
+let actx=null;
+const AC=()=>{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx;};
+function tone(f,t,d,v=.28,dl=0){try{const c=AC(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=t;o.frequency.setValueAtTime(f,c.currentTime+dl);g.gain.setValueAtTime(0,c.currentTime+dl);g.gain.linearRampToValueAtTime(v,c.currentTime+dl+.005);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+dl+d);o.start(c.currentTime+dl);o.stop(c.currentTime+dl+d+.05);}catch(e){}}
+function noise(d,v=.18,dl=0,hp=400){try{const c=AC(),b=c.createBuffer(1,c.sampleRate*d,c.sampleRate),da=b.getChannelData(0);for(let i=0;i<da.length;i++)da[i]=Math.random()*2-1;const s=c.createBufferSource();s.buffer=b;const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=hp;const g=c.createGain();s.connect(f);f.connect(g);g.connect(c.destination);g.gain.setValueAtTime(v,c.currentTime+dl);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+dl+d);s.start(c.currentTime+dl);s.stop(c.currentTime+dl+d+.05);}catch(e){}}
+const SFX={
+  ok()  {tone(880,'sine',.06,.28);tone(1100,'sine',.06,.3,.07);tone(1320,'sine',.08,.32,.14);tone(1760,'sine',.12,.28,.22);noise(.08,.05,0,3000);},
+  bad() {tone(300,'sawtooth',.05,.3);tone(220,'sawtooth',.08,.25,.05,120);noise(.12,.22,0,180);},
+  near(){tone(600,'sine',.06,.25);tone(660,'sine',.08,.2,.07);noise(.06,.04,0,2000);},
+  win() {[523,659,784,880,1047,1175,1319,1568].forEach((f,i)=>tone(f,'sine',.18,.3,i*.07));tone(2093,'sine',.4,.12,.35);},
+  click(){noise(.025,.12,0,600);tone(400,'square',.02,.08);},
+  tick(){noise(.04,.15,0,60);},
+  warn(){noise(.05,.22,0,50);tone(110,'sine',.1,.1,0);}
+};
+
+/* ══ VOCABULARY ══ */
+const VOCAB=[
+  {en:"a shop",         fr:"un magasin",                emoji:"🏪", def:"A place where you buy things.",          ex:"Welcome to our shop!"},
+  {en:"a customer",     fr:"un client",                 emoji:"🧑‍💼", def:"A person who buys something.",           ex:"The customer needs help."},
+  {en:"a salesperson",  fr:"un vendeur / une vendeuse", emoji:"👔", def:"A person who sells things in a shop.",   ex:"She is an excellent salesperson."},
+  {en:"a gift",         fr:"un cadeau",                 emoji:"🎁", def:"Something you give to someone.",          ex:"I'm looking for a gift for my mum."},
+  {en:"a product",      fr:"un produit",                emoji:"📦", def:"An item that is made and sold.",          ex:"This product is very popular."},
+  {en:"the price",      fr:"le prix",                   emoji:"💰", def:"The amount of money you pay.",            ex:"What is the price of this perfume?"},
+  {en:"a budget",       fr:"un budget",                 emoji:"💳", def:"The maximum amount of money you want to spend.", ex:"My budget is 30 euros."},
+  {en:"to help",        fr:"aider",                     emoji:"🤝", def:"To make it easier for someone.",         ex:"Can I help you?"},
+  {en:"to buy",         fr:"acheter",                   emoji:"🛒", def:"To pay money for something.",            ex:"She wants to buy a gift."},
+  {en:"to leave",       fr:"partir / quitter",          emoji:"🚪", def:"To go away from a place.",               ex:"Don't let the customer leave unhappy!"},
+  {en:"to greet",       fr:"accueillir / saluer",       emoji:"👋", def:"To say hello to someone who arrives.",   ex:"Always greet your customer with a smile."},
+  {en:"to welcome",     fr:"souhaiter la bienvenue",    emoji:"🤗", def:"To make someone feel they are wanted.",  ex:"Welcome to our store!"},
+  {en:"to recommend",   fr:"recommander",               emoji:"⭐", def:"To suggest something as a good choice.", ex:"I recommend this rose perfume."},
+  {en:"to explain",     fr:"expliquer",                 emoji:"💬", def:"To make something clear to someone.",    ex:"Let me explain the difference."},
+  {en:"to try",         fr:"essayer",                   emoji:"🤔", def:"To test or use something to see if you like it.", ex:"Would you like to try it on?"},
+  {en:"to apologise",   fr:"s'excuser",                 emoji:"🙏", def:"To say sorry for a mistake.",           ex:"I apologise for the wait."},
+  {en:"to exchange",    fr:"échanger",                  emoji:"🔄", def:"To give something and receive another in return.", ex:"You can exchange it within 30 days."},
+  {en:"a receipt",      fr:"un reçu",                   emoji:"🧾", def:"A paper that proves you paid for something.", ex:"Here is your receipt."},
+  {en:"a discount",     fr:"une réduction",             emoji:"🏷️", def:"A reduction in price.",                  ex:"We have a 20% discount today!"},
+  {en:"a fitting room", fr:"une cabine d'essayage",     emoji:"👗", def:"A small room where you try on clothes.", ex:"The fitting rooms are on the left."},
+  {en:"out of stock",   fr:"en rupture de stock",       emoji:"❌", def:"When an item is not available because it's all sold.", ex:"I'm sorry, it's out of stock."},
+  {en:"a loyalty card", fr:"une carte de fidélité",     emoji:"💎", def:"A card that gives you rewards when you shop regularly.", ex:"Do you have a loyalty card?"},
+  {en:"available",      fr:"disponible",                emoji:"✅", def:"Ready to be used or bought.",            ex:"This size is available in blue."},
+  {en:"a refund",       fr:"un remboursement",          emoji:"💸", def:"Money returned when you send a product back.", ex:"I'd like a refund please."},
+  {en:"a warranty",     fr:"une garantie",              emoji:"🛡️", def:"A promise that a product will be repaired if it breaks.", ex:"This product has a 2-year warranty."},
+  {en:"convenient",     fr:"pratique",                  emoji:"👍", def:"Easy to use or well-suited to your needs. Warning: false friend!", ex:"Our opening hours are very convenient."},
+  {en:"frustrated",     fr:"frustré(e)",                emoji:"😤", def:"Feeling upset because something is not going well.", ex:"The customer was frustrated by the delay."},
+  {en:"professional",   fr:"professionnel(le)",         emoji:"🏅", def:"Showing the skills expected in a job.",  ex:"Always stay professional."},
+  {en:"a solution",     fr:"une solution",              emoji:"✅", def:"A way to fix a problem.",                ex:"Let me find a solution for you."},
+  {en:"customer service",fr:"service client",           emoji:"📞", def:"The department that helps customers with problems.", ex:"Our customer service team is available 24/7."},
+];
+
+const PHRASE_QS=[
+  {spoken:"Hello, welcome to our shop. Can I help you?",  blank:"Can I _____ you?",          answer:"help",      wrong:["buy","greet","leave"],      fr:"Puis-je vous aider ?"},
+  {spoken:"I recommend this rose perfume. It's very popular.", blank:"I _____ this rose perfume.", answer:"recommend", wrong:["explain","exchange","try"],  fr:"Je recommande ce parfum."},
+  {spoken:"Would you like to try it on? The fitting rooms are on the left.", blank:"Would you like to _____ it on?", answer:"try", wrong:["buy","leave","exchange"], fr:"Voulez-vous l'essayer ?"},
+  {spoken:"I'm sorry, this item is out of stock.", blank:"This item is out of _____.", answer:"stock", wrong:["sale","order","budget"], fr:"Cet article est en rupture de stock."},
+  {spoken:"Do you have a loyalty card? You can get a discount.", blank:"You can get a _____.", answer:"discount", wrong:["receipt","refund","warranty"], fr:"Vous pouvez obtenir une réduction."},
+  {spoken:"Here is your receipt. Thank you for coming.", blank:"Here is your _____.", answer:"receipt", wrong:["refund","discount","budget"], fr:"Voici votre reçu."},
+  {spoken:"I apologise for the wait. Let me find a solution.", blank:"Let me find a _____.", answer:"solution", wrong:["product","discount","receipt"], fr:"Laissez-moi trouver une solution."},
+  {spoken:"This product has a two-year warranty.", blank:"This product has a _____.", answer:"warranty", wrong:["receipt","discount","refund"], fr:"Ce produit a une garantie de deux ans."},
+  {spoken:"Your budget is thirty euros — this gift is perfect!", blank:"Your _____ is thirty euros.", answer:"budget", wrong:["price","discount","receipt"], fr:"Votre budget est de trente euros."},
+  {spoken:"You can exchange it within thirty days with your receipt.", blank:"You can _____ it within thirty days.", answer:"exchange", wrong:["buy","try","leave"], fr:"Vous pouvez l'échanger dans les trente jours."},
+];
+
+/* ══ STATE ══ */
+let G={xp:0,best:0};
+let S={mode:'translate',questions:[],idx:0,streak:0,maxStreak:0,correct:0,total:0,hearts:5,timerMax:12,timerLeft:12,timerRef:null,waiting:false,currentAudio:null};
+let lastMode='translate';
+
+function saveG(){try{localStorage.setItem('lf_g',JSON.stringify(G));}catch(e){}}
+function loadG(){try{const d=JSON.parse(localStorage.getItem('lf_g')||'{}');if(d.xp!==undefined)G={...G,...d};}catch(e){}}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goHome(){
+  clearTimer();hideFb();
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+  document.getElementById('hXP').textContent=G.xp;
+  document.getElementById('hBest').textContent=G.best;
+  showScreen('homeScreen');
+}
+
+/* ══ GAME START ══ */
+const MODE_CFG={
+  translate:  {label:'🔊 Hear & Translate', color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal)',   timer:12, n:12},
+  phrase:     {label:'💬 Hear the Phrase',   color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue)',   timer:14, n:10},
+  definition: {label:'🧠 Hear the Definition',color:'var(--orange)',bg:'var(--orange-bg)',border:'var(--orange)', timer:14, n:10},
+  dictee:     {label:'✍️ Dictée',            color:'var(--purple)', bg:'var(--purple-bg)', border:'var(--purple)', timer:18, n:10},
+};
+
+function startGame(mode){
+  SFX.click(); lastMode=mode;
+  const cfg=MODE_CFG[mode];
+  S={mode,questions:[],idx:0,streak:0,maxStreak:0,correct:0,total:0,hearts:5,
+     timerMax:cfg.timer,timerLeft:cfg.timer,timerRef:null,waiting:false};
+
+  // Build question list
+  const vList=shuffle([...VOCAB]);
+  if(mode==='translate'||mode==='dictee'){
+    S.questions=vList.slice(0,cfg.n).map(w=>({word:w}));
+  } else if(mode==='phrase'){
+    S.questions=shuffle([...PHRASE_QS]).slice(0,cfg.n);
+  } else if(mode==='definition'){
+    S.questions=vList.slice(0,cfg.n).map(w=>({word:w,isDef:true}));
+  }
+  S.total=S.questions.length;
+
+  // Style chip
+  const chip=document.getElementById('modeChip');
+  chip.textContent=cfg.label;
+  chip.style.cssText=`background:${cfg.bg};color:${cfg.color};border-color:${cfg.border};border-radius:20px;padding:3px 11px;border:2px solid;font-family:'Fredoka One',cursive;font-size:.72rem;align-self:flex-start;`;
+
+  showScreen('gameScreen');
+  renderQ();
+}
+function replayLast(){startGame(lastMode);}
+
+/* ══ RENDER ══ */
+function renderQ(){
+  hideFb();
+  if(S.idx>=S.total){endGame();return;}
+  document.getElementById('progFill').style.width=(S.idx/S.total*100)+'%';
+  updateHUD();
+  document.getElementById('exampleBox').className='example-box';
+  document.getElementById('ansGrid').style.display='flex';
+  document.getElementById('dictWrap').style.display='none';
+  document.getElementById('qText').style.display='none';
+  document.getElementById('qCtx').style.display='none';
+
+  const q=S.questions[S.idx];
+  if(S.mode==='translate')   renderTranslate(q);
+  else if(S.mode==='phrase') renderPhrase(q);
+  else if(S.mode==='definition') renderDefinition(q);
+  else if(S.mode==='dictee') renderDictee(q);
+
+  startTimer();
+}
+
+/* ── TRANSLATE: hear word → find FR ── */
+function renderTranslate(q){
+  const w=q.word;
+  document.getElementById('qTypeLabel').textContent='🎧 Listen → find the French translation';
+  setWaves(true);
+  buildQCM(
+    w.fr,
+    shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.fr),
+    w
+  );
+  setTimeout(()=>speak(w.en),350);
+}
+
+/* ── PHRASE: hear phrase → fill blank ── */
+function renderPhrase(q){
+  document.getElementById('qTypeLabel').textContent='🎧 Listen → complete the sentence';
+  setWaves(true);
+  const txt=document.getElementById('qText');
+  txt.innerHTML=q.blank.replace('_____','<span class="q-blank">?????</span>');
+  txt.style.display='block';
+  const ctx=document.getElementById('qCtx');
+  ctx.textContent='🇫🇷 '+q.fr; ctx.style.display='block';
+  buildQCM(q.answer,q.wrong,null);
+  setTimeout(()=>speak(q.spoken),350);
+}
+
+/* ── DEFINITION: hear definition → find EN word ── */
+function renderDefinition(q){
+  const w=q.word;
+  document.getElementById('qTypeLabel').textContent='🧠 Listen to the definition → find the word';
+  setWaves(true);
+  buildQCM(
+    w.en,
+    shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.en),
+    w
+  );
+  setTimeout(()=>speak(w.def),350);
+}
+
+/* ── DICTÉE: hear word → type it ── */
+function renderDictee(q){
+  const w=q.word;
+  document.getElementById('qTypeLabel').textContent='✍️ Listen and type the word you hear';
+  setWaves(true);
+  document.getElementById('ansGrid').style.display='none';
+  const dw=document.getElementById('dictWrap'); dw.style.display='flex';
+  const inp=document.getElementById('dictInput');
+  inp.value=''; inp.className='dict-input'; inp.dataset.word=JSON.stringify(w);
+  inp.onkeydown=e=>{if(e.key==='Enter')checkDictee();};
+  setTimeout(()=>{speak(w.en); inp.focus();},350);
+}
+
+function checkDictee(){
+  const inp=document.getElementById('dictInput');
+  const raw=inp.value.trim().toLowerCase();
+  if(!raw)return;
+  const w=JSON.parse(inp.dataset.word);
+  const correct=w.en.toLowerCase().replace(/^(a |an |the )/,''); // allow without article
+  const typed=raw.replace(/^(a |an |the )/,'');
+  clearTimer();
+
+  function lev(a,b){const m=a.length,n=b.length,dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i?j?0:i:j));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return dp[m][n];}
+
+  const dist=lev(typed,correct);
+  if(dist===0||typed===correct){
+    inp.className='dict-input ok';
+    handleResult(true,w.en,w,false);
+  } else if(dist<=2&&correct.length>4){
+    inp.className='dict-input near';
+    SFX.near(); doFlash('ok');
+    S.streak++;S.correct++;
+    if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+    G.xp+=5; saveG(); updateHUD();
+    showFb(true,'Close! +5 XP',`✅ ${w.en} (${w.fr})`,'⚠️ Check your spelling!');
+    if(w.ex)showExample(w.ex);
+    S.waiting=true;
+  } else {
+    inp.className='dict-input bad';
+    handleResult(false,w.en,w,false);
+  }
+}
+
+/* ── QCM builder ── */
+function buildQCM(correct, wrongs, word){
+  const grid=document.getElementById('ansGrid'); grid.innerHTML='';
+  const keys=['A','B','C','D'];
+  shuffle([correct,...wrongs]).forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn'; btn.dataset.ans=opt;
+    btn.innerHTML=`<span class="ans-key">${keys[i]}</span>${opt}`;
+    btn.onclick=()=>{SFX.click(); handleAns(btn,opt,correct,word);};
+    grid.appendChild(btn);
+  });
+}
+
+function handleAns(btn,answer,correct,word){
+  if(S.waiting)return;
+  S.waiting=true; clearTimer();
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+  const ok=answer===correct;
+  if(ok) btn.classList.add('correct');
+  else{btn.classList.add('wrong'); document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.ans===correct)b.classList.add('correct');});}
+  handleResult(ok,correct,word,false);
+}
+
+function handleResult(ok,correct,word,isType){
+  setWaves(false);
+  if(ok){
+    S.streak++; S.correct++;
+    if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+    G.xp+=10; saveG(); doFlash('ok'); SFX.ok();
+    const sub=word?`✅ ${word.en} = ${word.fr}`:`✅ Correct!`;
+    const note=word&&word.def&&S.mode==='definition'?`"${word.def}"`:'';
+    showFb(true,'Correct! +10 XP',sub,note);
+    if(word&&word.ex)showExample(`"${word.ex}"`);
+  } else {
+    S.streak=0; S.hearts=Math.max(0,S.hearts-1);
+    SFX.bad(); doFlash('bad');
+    showFb(false,'Not quite!',`✅ Answer: ${correct}`,'');
+    if(S.hearts<=0){setTimeout(()=>endGame(true),1800);return;}
+  }
+  updateHUD(); saveG(); S.waiting=true;
+}
+
+function nextQ(){SFX.click();S.idx++;S.waiting=false;renderQ();}
+
+/* ── Replay audio ── */
+function replayAudio(){
+  SFX.click();
+  const q=S.questions[S.idx];
+  if(!q)return;
+  setWaves(true);
+  if(S.mode==='translate')         speak(q.word.en);
+  else if(S.mode==='phrase')       speak(q.spoken);
+  else if(S.mode==='definition')   speak(q.word.def);
+  else if(S.mode==='dictee')       speak(q.word.en);
+}
+
+/* ── Sound waves ── */
+function setWaves(playing){
+  const sv=document.getElementById('soundVisual');
+  sv.className='sound-visual'+(playing?'':' paused');
+  document.getElementById('playBtn').textContent=playing?'🔊':'▶️';
+}
+
+/* ── TTS ── */
+/* ══ ELEVENLABS TTS ══
+   3 voix selon le mode :
+   - translate  → Christina (claire, féminine)
+   - phrase     → Christina
+   - definition → Male Brit (2ème accent pour les élèves)
+   - dictee     → Blondie (voix différente = exercice plus difficile)
+   Fallback → speechSynthesis navigateur si API inaccessible
+══════════════════════════════════════════ */
+const EL_KEY = 'sk_f417a97d8f080d5eeb97d16547aa6bef6ec1c8f33101670d';
+const EL_VOICES = {
+  christina : 'hpp4J3VqNfWAUOO0d1Us',
+  male_brit : 'CwhRBWXzGAHq8TQ4Fs17',
+  blondie   : 'BuaKXS4Sv1Mccaw3flfU',
+};
+const EL_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
+
+// Simple in-memory cache: "voiceId|text" → Blob URL
+const audioCache = {};
+let currentAudio = null;
+
+function voiceForMode(mode){
+  if(mode==='definition') return EL_VOICES.male_brit;
+  if(mode==='dictee')     return EL_VOICES.blondie;
+  return EL_VOICES.christina;
+}
+
+async function speak(t){
+  // Stop any current playback
+  if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  setWaves(true);
+
+  const voiceId = voiceForMode(S.mode||'translate');
+  const cacheKey = voiceId+'|'+t;
+
+  try {
+    // Use cached blob URL if available
+    let url = audioCache[cacheKey];
+
+    if(!url){
+      const resp = await fetch(`${EL_URL}/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': EL_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text: t,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability:0.5, similarity_boost:0.8, style:0.2, use_speaker_boost:true }
+        })
+      });
+
+      if(!resp.ok) throw new Error('ElevenLabs API error: '+resp.status);
+      const blob = await resp.blob();
+      url = URL.createObjectURL(blob);
+      audioCache[cacheKey] = url; // cache for replay
+    }
+
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.onended = () => { setWaves(false); currentAudio=null; };
+    audio.onerror = () => { setWaves(false); speakFallback(t); };
+    audio.play();
+
+  } catch(err) {
+    console.warn('ElevenLabs unavailable, using browser TTS:', err);
+    speakFallback(t);
+  }
+}
+
+// Fallback: browser speechSynthesis
+function speakFallback(t){
+  if(!window.speechSynthesis){ setWaves(false); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang='en-GB'; u.rate=.82; u.pitch=1.05;
+  const voices=window.speechSynthesis.getVoices();
+  const v=voices.find(v=>v.lang.startsWith('en-GB'))||voices.find(v=>v.lang.startsWith('en'));
+  if(v) u.voice=v;
+  u.onend=()=>setWaves(false);
+  window.speechSynthesis.speak(u);
+}
+window.speechSynthesis&&(window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices());
+
+/* ── Timer ── */
+function startTimer(){
+  S.timerLeft=S.timerMax; updTimer();
+  S.timerRef=setInterval(()=>{
+    S.timerLeft-=.1; updTimer();
+    if(S.timerLeft<=3&&S.timerLeft>0&&Math.round(S.timerLeft*10)%5===0)SFX.warn();
+    else if(S.timerLeft<=5&&S.timerLeft>3&&Math.round(S.timerLeft*10)%8===0)SFX.tick();
+    if(S.timerLeft<=0){clearTimer();if(!S.waiting)timeOut();}
+  },100);
+}
+function updTimer(){
+  const pct=Math.max(0,S.timerLeft/S.timerMax*100);
+  const bar=document.getElementById('timerFill');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>50?'var(--teal)':pct>25?'var(--yellow)':'var(--red)';
+}
+function clearTimer(){if(S.timerRef){clearInterval(S.timerRef);S.timerRef=null;}}
+function timeOut(){
+  if(S.waiting)return;S.waiting=true;
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+  setWaves(false);
+  S.streak=0;S.hearts=Math.max(0,S.hearts-1);
+  SFX.bad();doFlash('bad');updateHUD();saveG();
+  showFb(false,"Time's up! ⏱️","Tap 🔊 to hear again next time",'');
+}
+
+/* ── HUD ── */
+function updateHUD(){
+  document.getElementById('heartsEl').textContent='❤️'.repeat(S.hearts)||'💔';
+  document.getElementById('streakEl').textContent='🔥'+S.streak;
+}
+
+/* ── Feedback ── */
+function showFb(ok,title,sub,note){
+  const bar=document.getElementById('fbBar');
+  document.getElementById('fbIcon').textContent=ok?'🎉':'💔';
+  document.getElementById('fbTitle').textContent=title;
+  document.getElementById('fbSub').textContent=sub||'';
+  document.getElementById('fbNote').textContent=note||'';
+  bar.className='fb-bar show '+(ok?'ok':'bad');
+}
+function hideFb(){document.getElementById('fbBar').className='fb-bar';}
+function showExample(ex){const el=document.getElementById('exampleBox');el.textContent='💬 '+ex;el.className='example-box show';}
+function doFlash(t){const el=document.getElementById('flash');el.className=`flash ${t} on`;setTimeout(()=>el.className=`flash ${t}`,180);}
+
+/* ── End ── */
+function endGame(noHearts=false){
+  clearTimer(); lastMode=S.mode;
+  const acc=S.total>0?Math.round(S.correct/S.total*100):0;
+  const score=S.correct*10;
+  if(score>G.best){G.best=score;saveG();}
+  let big,stars,msg;
+  if(noHearts)      {big='💔';stars='💔';msg='Game over! Try again!';}
+  else if(acc>=90)  {big='🏆';stars='⭐⭐⭐';msg='Perfect listening!';SFX.win();confetti();}
+  else if(acc>=70)  {big='🥈';stars='⭐⭐';msg='Great ear! Keep going!';SFX.ok();}
+  else              {big='🎯';stars='⭐';msg='Train more — you can do it!';}
+  document.getElementById('resBig').textContent=big;
+  document.getElementById('resXP').textContent=G.xp+' XP';
+  document.getElementById('resStars').textContent=stars;
+  document.getElementById('resMsg').textContent=msg;
+  document.getElementById('resMode').textContent=MODE_CFG[S.mode].label;
+  document.getElementById('rsCorrect').textContent=S.correct+'/'+S.total;
+  document.getElementById('rsStreak').textContent=S.maxStreak+'🔥';
+  document.getElementById('rsAccuracy').textContent=acc+'%';
+  document.getElementById('btnAgain').onclick=replayLast;
+  showScreen('resultsScreen');
+}
+
+/* ── Confetti ── */
+function confetti(){
+  const cols=['#00d4aa','#1CB0F6','#FFC800','#FF9600','#b07edc','#FF4B4B'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');p.className='confetti-p';
+    p.style.cssText=`left:${Math.random()*100}vw;background:${cols[~~(Math.random()*cols.length)]};animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.8}s;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'3px'}`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),4000);
+  }
+}
+
+/* ══ INIT ══ */
+loadG();goHome();
+</script>
+</body>
+</html>
