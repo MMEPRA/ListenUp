@@ -438,8 +438,7 @@ function renderQ(){
   else if(S.mode==='situation')   renderSituation(q);
   else if(S.mode==='definition')  renderDefinition(q);
   else if(S.mode==='dictee')      renderDictee(q);
-
-  startTimer();
+  // Timer starts AFTER audio finishes — see speak() onended callback
 }
 
 /* ── TRANSLATE ── */
@@ -448,7 +447,7 @@ function renderTranslate(q){
   document.getElementById('qTypeLabel').textContent='🎧 Listen → find the French translation';
   setWaves(true);
   buildQCM(w.fr, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.fr), w);
-  scheduledSpeak(w.en);
+  scheduledSpeak(w.en, 350, true);
 }
 
 /* ── HEAR THE SITUATION ── */
@@ -459,7 +458,7 @@ function renderSituation(q){
   txt.innerHTML='❓ Which word describes this situation?';
   txt.style.display='block';
   buildQCM(q.answer, q.wrong, {en:q.answer, fr:q.fr, ex:null});
-  scheduledSpeak(q.spoken, 400);
+  scheduledSpeak(q.spoken, 400, true);
 }
 
 /* ── DEFINITION ── */
@@ -468,7 +467,7 @@ function renderDefinition(q){
   document.getElementById('qTypeLabel').textContent='🧠 Listen to the definition → find the word';
   setWaves(true);
   buildQCM(w.en, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.en), w);
-  scheduledSpeak(w.def, 400);
+  scheduledSpeak(w.def, 400, true);
 }
 
 /* ── DICTÉE ── */
@@ -481,7 +480,7 @@ function renderDictee(q){
   const inp=document.getElementById('dictInput');
   inp.value=''; inp.className='dict-input'; inp.dataset.word=JSON.stringify(w);
   inp.onkeydown=e=>{if(e.key==='Enter')checkDictee();};
-  scheduledSpeak(w.en, 350);
+  scheduledSpeak(w.en, 350, true);
   setTimeout(()=>inp.focus(), 400);
 }
 
@@ -559,11 +558,12 @@ function handleResult(ok,correct,word){
     G.xp+=10; saveG(); doFlash('ok'); SFX.ok();
     const sub=word&&word.fr?`✅ ${word.en} = ${word.fr}`:'✅ Correct!';
     const note=word&&word.def&&S.mode==='definition'?`💬 "${word.def}"`:'';
-    // Pick encouragement — combo message at streak milestones
     const enc = S.streak>=4 ? COMBO_MSGS[(S.streak-4)%COMBO_MSGS.length]
                : ENCOURAGEMENTS[Math.floor(Math.random()*ENCOURAGEMENTS.length)];
     showFb(true, `${enc} +10 XP`, sub, note);
     if(word&&word.ex) showExample(`"${word.ex}"`);
+    // Christina speaks the encouragement out loud!
+    setTimeout(()=>speak(enc, false), 250);
   } else {
     S.streak=0; S.hearts=Math.max(0,S.hearts-1);
     SFX.bad(); doFlash('bad');
@@ -643,19 +643,24 @@ const ENCOURAGEMENTS=[
   "Perfect!", "Outstanding!", "Sharp ears!", "Nailed it!"
 ];
 const COMBO_MSGS=["Amazing streak!","On fire!","Unstoppable!","Top student!"];
-let speakTimer=null; // track pending speak timeout to cancel it
+let speakingQuestion = false; // true when speaking the question audio
 
-async function speak(t){
+async function speak(t, isQuestion=false, onDone=null){
   // Cancel any pending scheduled speak
   if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
   // Stop current audio immediately
   if(currentAudio){currentAudio.pause();currentAudio.src='';currentAudio=null;}
   if(window.speechSynthesis)window.speechSynthesis.cancel();
-  setWaves(true);
+  if(isQuestion) setWaves(true);
 
   const voiceId  = voiceForMode(S.mode||'translate');
   const rate     = rateForMode(S.mode||'translate');
   const cacheKey = voiceId+'|'+t;
+
+  const done = ()=>{
+    if(isQuestion){ setWaves(false); startTimer(); } // start timer AFTER audio ends
+    if(onDone) onDone();
+  };
 
   try {
     let url = audioCache[cacheKey];
@@ -686,30 +691,30 @@ async function speak(t){
     }
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.onended = ()=>{ setWaves(false); currentAudio=null; };
-    audio.onerror = ()=>{ setWaves(false); speakFallback(t); };
+    audio.onended = ()=>{ if(isQuestion) setWaves(false); currentAudio=null; done(); };
+    audio.onerror = ()=>{ if(isQuestion) setWaves(false); speakFallback(t, done); };
     await audio.play();
   } catch(err){
     console.warn('ElevenLabs unavailable:', err);
-    speakFallback(t);
+    speakFallback(t, done);
   }
 }
 
-function scheduledSpeak(t, delay=350){
+function scheduledSpeak(t, delay=350, isQuestion=false){
   if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
-  speakTimer=setTimeout(()=>{ speakTimer=null; speak(t); }, delay);
+  speakTimer=setTimeout(()=>{ speakTimer=null; speak(t, isQuestion); }, delay);
 }
 
 // Fallback: browser speechSynthesis
-function speakFallback(t){
-  if(!window.speechSynthesis){ setWaves(false); return; }
+function speakFallback(t, done=null){
+  if(!window.speechSynthesis){ setWaves(false); if(done)done(); return; }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(t);
-  u.lang='en-GB'; u.rate=.82; u.pitch=1.05;
+  u.lang='en-GB'; u.rate=.88; u.pitch=1.05;
   const voices=window.speechSynthesis.getVoices();
   const v=voices.find(v=>v.lang.startsWith('en-GB'))||voices.find(v=>v.lang.startsWith('en'));
   if(v) u.voice=v;
-  u.onend=()=>setWaves(false);
+  u.onend=()=>{ setWaves(false); if(done)done(); };
   window.speechSynthesis.speak(u);
 }
 window.speechSynthesis&&(window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices());
