@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ListenUp!</title>
-<meta name="description" content="English listening game for Bac Pro MRC — Shop vocabulary Unit 6">
-<meta name="theme-color" content="#00d4aa">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4aa'/%3E%3Cstop offset='100%25' style='stop-color:%230A91D4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23bg)'/%3E%3Ctext x='11' y='50' font-family='Arial Black,sans-serif' font-weight='900' font-size='42' fill='white'%3EL%3C/text%3E%3Ccircle cx='44' cy='46' r='3' fill='white' opacity='0.9'/%3E%3Ccircle cx='51' cy='40' r='3' fill='white' opacity='0.65'/%3E%3Ccircle cx='57' cy='34' r='3' fill='white' opacity='0.35'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -83,14 +80,14 @@ body{font-family:'Nunito',sans-serif;background:var(--g50);color:var(--text);min
 .listen-card{background:var(--card);border:2px solid var(--g200);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:var(--sh);}
 .q-type-label{font-size:.7rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--g600);margin-bottom:12px;}
 
-/* Sound waves animation — contained, no overflow onto text */
-.sound-visual{display:flex;align-items:center;justify-content:center;margin:0 auto 12px;position:relative;width:180px;height:100px;overflow:hidden;}
+/* Sound waves animation */
+.sound-visual{display:flex;align-items:center;justify-content:center;gap:0;margin:0 auto 16px;position:relative;width:200px;height:90px;}
 .wave-ring{position:absolute;border-radius:50%;border:3px solid var(--teal);opacity:0;animation:waveOut 2s ease-out infinite;}
-.wave-ring:nth-child(1){width:55px; height:55px; animation-delay:0s;}
-.wave-ring:nth-child(2){width:85px; height:85px; animation-delay:.4s;}
-.wave-ring:nth-child(3){width:115px;height:115px;animation-delay:.8s;}
-.wave-ring:nth-child(4){width:145px;height:145px;animation-delay:1.2s;}
-@keyframes waveOut{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(1)}}
+.wave-ring:nth-child(1){width:60px;height:60px;animation-delay:0s;}
+.wave-ring:nth-child(2){width:95px;height:95px;animation-delay:.4s;}
+.wave-ring:nth-child(3){width:130px;height:130px;animation-delay:.8s;}
+.wave-ring:nth-child(4){width:165px;height:165px;animation-delay:1.2s;}
+@keyframes waveOut{0%{opacity:.8;transform:scale(.6)}100%{opacity:0;transform:scale(1)}}
 .sound-visual.paused .wave-ring{animation-play-state:paused;opacity:0;}
 
 .play-btn{width:72px;height:72px;border-radius:50%;background:var(--teal);border:none;border-bottom:5px solid var(--teal-dk);cursor:pointer;font-size:2rem;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:2;flex-shrink:0;}
@@ -196,11 +193,11 @@ body{font-family:'Nunito',sans-serif;background:var(--g50);color:var(--text);min
       </div>
       <div class="mode-badge b-teal">PLAY</div>
     </div>
-    <div class="mode-card m2" onclick="startGame('situation')">
-      <div class="mode-icon">🎬</div>
+    <div class="mode-card m2" onclick="startGame('phrase')">
+      <div class="mode-icon">💬</div>
       <div class="mode-info">
-        <div class="mode-name">Hear the Situation</div>
-        <div class="mode-desc">Listen to a shop situation → find the right word</div>
+        <div class="mode-name">Hear the Phrase</div>
+        <div class="mode-desc">Listen to a pro sentence → find the missing word</div>
       </div>
       <div class="mode-badge b-blue">PLAY</div>
     </div>
@@ -353,24 +350,22 @@ const VOCAB=[
   {en:"customer service",fr:"service client",           emoji:"📞", def:"The department that helps customers with problems.", ex:"Our customer service team is available 24/7."},
 ];
 
-const SITUATION_QS=[
-  {spoken:"A woman comes into the shop. She says she bought a jacket last week but it is too small. She wants to swap it for a bigger size.", answer:"to exchange", wrong:["to buy","to leave","to recommend"], key:"exchange", fr:"échanger"},
-  {spoken:"A tourist asks: how much does this perfume cost? He wants to know the amount of money he needs to pay.", answer:"the price", wrong:["a budget","a discount","a receipt"], key:"price", fr:"le prix"},
-  {spoken:"A customer says she cannot spend more than thirty euros. Thirty euros is the maximum she can pay today.", answer:"a budget", wrong:["the price","a discount","a loyalty card"], key:"budget", fr:"un budget"},
-  {spoken:"The customer wants to test the jacket before paying. She wants to put it on and see if she likes it.", answer:"to try", wrong:["to buy","to exchange","to explain"], key:"try", fr:"essayer"},
-  {spoken:"I am very sorry, we do not have this item in our shop right now. All the units have been sold.", answer:"out of stock", wrong:["available","a refund","a warranty"], key:"stock", fr:"en rupture de stock"},
-  {spoken:"The customer is not happy at all. She has been waiting for twenty minutes and nobody helped her. She is very upset.", answer:"frustrated", wrong:["professional","uncomfortable","convenient"], key:"frustrated", fr:"frustré(e)"},
-  {spoken:"A man comes back to the shop with his broken watch. He wants his money back because the product stopped working after one week.", answer:"a refund", wrong:["a receipt","a discount","a warranty"], key:"refund", fr:"un remboursement"},
-  {spoken:"The shop gives every regular customer a special card. Each time they buy something, they collect points and get special offers.", answer:"a loyalty card", wrong:["a receipt","a brochure","a discount"], key:"loyalty", fr:"une carte de fidélité"},
-  {spoken:"The customer speaks Japanese and does not understand English well. Communication is very difficult for the salesperson.", answer:"language", wrong:["difficult","professional","a solution"], key:"language", fr:"langue"},
-  {spoken:"The salesperson says: do not worry, I will find a way to fix this problem for you. We always take care of our customers.", answer:"a solution", wrong:["a refund","a warranty","a receipt"], key:"solution", fr:"une solution"},
-  {spoken:"This product is still available. It can be bought today. We have it in three different colours and two sizes.", answer:"available", wrong:["out of stock","convenient","professional"], key:"available", fr:"disponible"},
-  {spoken:"The manager of the shop always stays calm, polite and efficient with difficult customers. She behaves in an excellent way at work.", answer:"professional", wrong:["frustrated","uncomfortable","convenient"], key:"professional", fr:"professionnel(le)"},
+const PHRASE_QS=[
+  {spoken:"Hello, welcome to our shop. Can I help you?",  blank:"Can I _____ you?",          answer:"help",      wrong:["buy","greet","leave"],      fr:"Puis-je vous aider ?"},
+  {spoken:"I recommend this rose perfume. It's very popular.", blank:"I _____ this rose perfume.", answer:"recommend", wrong:["explain","exchange","try"],  fr:"Je recommande ce parfum."},
+  {spoken:"Would you like to try it on? The fitting rooms are on the left.", blank:"Would you like to _____ it on?", answer:"try", wrong:["buy","leave","exchange"], fr:"Voulez-vous l'essayer ?"},
+  {spoken:"I'm sorry, this item is out of stock.", blank:"This item is out of _____.", answer:"stock", wrong:["sale","order","budget"], fr:"Cet article est en rupture de stock."},
+  {spoken:"Do you have a loyalty card? You can get a discount.", blank:"You can get a _____.", answer:"discount", wrong:["receipt","refund","warranty"], fr:"Vous pouvez obtenir une réduction."},
+  {spoken:"Here is your receipt. Thank you for coming.", blank:"Here is your _____.", answer:"receipt", wrong:["refund","discount","budget"], fr:"Voici votre reçu."},
+  {spoken:"I apologise for the wait. Let me find a solution.", blank:"Let me find a _____.", answer:"solution", wrong:["product","discount","receipt"], fr:"Laissez-moi trouver une solution."},
+  {spoken:"This product has a two-year warranty.", blank:"This product has a _____.", answer:"warranty", wrong:["receipt","discount","refund"], fr:"Ce produit a une garantie de deux ans."},
+  {spoken:"Your budget is thirty euros — this gift is perfect!", blank:"Your _____ is thirty euros.", answer:"budget", wrong:["price","discount","receipt"], fr:"Votre budget est de trente euros."},
+  {spoken:"You can exchange it within thirty days with your receipt.", blank:"You can _____ it within thirty days.", answer:"exchange", wrong:["buy","try","leave"], fr:"Vous pouvez l'échanger dans les trente jours."},
 ];
 
 /* ══ STATE ══ */
 let G={xp:0,best:0};
-let S={mode:'translate',questions:[],idx:0,streak:0,maxStreak:0,correct:0,total:0,hearts:5,timerMax:12,timerLeft:12,timerRef:null,waiting:false};
+let S={mode:'translate',questions:[],idx:0,streak:0,maxStreak:0,correct:0,total:0,hearts:5,timerMax:12,timerLeft:12,timerRef:null,waiting:false,currentAudio:null};
 let lastMode='translate';
 
 function saveG(){try{localStorage.setItem('lf_g',JSON.stringify(G));}catch(e){}}
@@ -380,7 +375,6 @@ function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){
   clearTimer();hideFb();
-  if(currentAudio){currentAudio.pause();currentAudio=null;}
   if(window.speechSynthesis)window.speechSynthesis.cancel();
   document.getElementById('hXP').textContent=G.xp;
   document.getElementById('hBest').textContent=G.best;
@@ -389,10 +383,10 @@ function goHome(){
 
 /* ══ GAME START ══ */
 const MODE_CFG={
-  translate : {label:'🔊 Hear & Translate',    color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal)',   timer:14, n:12},
-  situation : {label:'🎬 Hear the Situation',   color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue)',   timer:20, n:10},
-  definition: {label:'🧠 Hear the Definition',  color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange)', timer:18, n:10},
-  dictee    : {label:'✍️ Dictée',               color:'var(--purple)', bg:'var(--purple-bg)', border:'var(--purple)', timer:25, n:10},
+  translate:  {label:'🔊 Hear & Translate', color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal)',   timer:12, n:12},
+  phrase:     {label:'💬 Hear the Phrase',   color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue)',   timer:14, n:10},
+  definition: {label:'🧠 Hear the Definition',color:'var(--orange)',bg:'var(--orange-bg)',border:'var(--orange)', timer:14, n:10},
+  dictee:     {label:'✍️ Dictée',            color:'var(--purple)', bg:'var(--purple-bg)', border:'var(--purple)', timer:18, n:10},
 };
 
 function startGame(mode){
@@ -401,16 +395,18 @@ function startGame(mode){
   S={mode,questions:[],idx:0,streak:0,maxStreak:0,correct:0,total:0,hearts:5,
      timerMax:cfg.timer,timerLeft:cfg.timer,timerRef:null,waiting:false};
 
-  // Fresh shuffle every time — guaranteed different order
+  // Build question list
+  const vList=shuffle([...VOCAB]);
   if(mode==='translate'||mode==='dictee'){
-    S.questions=shuffle([...VOCAB]).slice(0,cfg.n).map(w=>({word:w}));
-  } else if(mode==='situation'){
-    S.questions=shuffle([...SITUATION_QS]).slice(0,cfg.n);
+    S.questions=vList.slice(0,cfg.n).map(w=>({word:w}));
+  } else if(mode==='phrase'){
+    S.questions=shuffle([...PHRASE_QS]).slice(0,cfg.n);
   } else if(mode==='definition'){
-    S.questions=shuffle([...VOCAB]).slice(0,cfg.n).map(w=>({word:w,isDef:true}));
+    S.questions=vList.slice(0,cfg.n).map(w=>({word:w,isDef:true}));
   }
   S.total=S.questions.length;
 
+  // Style chip
   const chip=document.getElementById('modeChip');
   chip.textContent=cfg.label;
   chip.style.cssText=`background:${cfg.bg};color:${cfg.color};border-color:${cfg.border};border-radius:20px;padding:3px 11px;border:2px solid;font-family:'Fredoka One',cursive;font-size:.72rem;align-self:flex-start;`;
@@ -431,46 +427,56 @@ function renderQ(){
   document.getElementById('dictWrap').style.display='none';
   document.getElementById('qText').style.display='none';
   document.getElementById('qCtx').style.display='none';
-  setWaves(false);
 
   const q=S.questions[S.idx];
-  if     (S.mode==='translate')   renderTranslate(q);
-  else if(S.mode==='situation')   renderSituation(q);
-  else if(S.mode==='definition')  renderDefinition(q);
-  else if(S.mode==='dictee')      renderDictee(q);
-  // Timer starts AFTER audio finishes — see speak() onended callback
+  if(S.mode==='translate')   renderTranslate(q);
+  else if(S.mode==='phrase') renderPhrase(q);
+  else if(S.mode==='definition') renderDefinition(q);
+  else if(S.mode==='dictee') renderDictee(q);
+
+  startTimer();
 }
 
-/* ── TRANSLATE ── */
+/* ── TRANSLATE: hear word → find FR ── */
 function renderTranslate(q){
   const w=q.word;
   document.getElementById('qTypeLabel').textContent='🎧 Listen → find the French translation';
   setWaves(true);
-  buildQCM(w.fr, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.fr), w);
-  scheduledSpeak(w.en, 350, true);
+  buildQCM(
+    w.fr,
+    shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.fr),
+    w
+  );
+  setTimeout(()=>speak(w.en),350);
 }
 
-/* ── HEAR THE SITUATION ── */
-function renderSituation(q){
-  document.getElementById('qTypeLabel').textContent='🎬 Listen to the situation → find the word';
+/* ── PHRASE: hear phrase → fill blank ── */
+function renderPhrase(q){
+  document.getElementById('qTypeLabel').textContent='🎧 Listen → complete the sentence';
   setWaves(true);
   const txt=document.getElementById('qText');
-  txt.innerHTML='❓ Which word describes this situation?';
+  txt.innerHTML=q.blank.replace('_____','<span class="q-blank">?????</span>');
   txt.style.display='block';
-  buildQCM(q.answer, q.wrong, {en:q.answer, fr:q.fr, ex:null});
-  scheduledSpeak(q.spoken, 400, true);
+  const ctx=document.getElementById('qCtx');
+  ctx.textContent='🇫🇷 '+q.fr; ctx.style.display='block';
+  buildQCM(q.answer,q.wrong,null);
+  setTimeout(()=>speak(q.spoken),350);
 }
 
-/* ── DEFINITION ── */
+/* ── DEFINITION: hear definition → find EN word ── */
 function renderDefinition(q){
   const w=q.word;
   document.getElementById('qTypeLabel').textContent='🧠 Listen to the definition → find the word';
   setWaves(true);
-  buildQCM(w.en, shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.en), w);
-  scheduledSpeak(w.def, 400, true);
+  buildQCM(
+    w.en,
+    shuffle(VOCAB.filter(v=>v.en!==w.en)).slice(0,3).map(v=>v.en),
+    w
+  );
+  setTimeout(()=>speak(w.def),350);
 }
 
-/* ── DICTÉE ── */
+/* ── DICTÉE: hear word → type it ── */
 function renderDictee(q){
   const w=q.word;
   document.getElementById('qTypeLabel').textContent='✍️ Listen and type the word you hear';
@@ -480,8 +486,7 @@ function renderDictee(q){
   const inp=document.getElementById('dictInput');
   inp.value=''; inp.className='dict-input'; inp.dataset.word=JSON.stringify(w);
   inp.onkeydown=e=>{if(e.key==='Enter')checkDictee();};
-  scheduledSpeak(w.en, 350, true);
-  setTimeout(()=>inp.focus(), 400);
+  setTimeout(()=>{speak(w.en); inp.focus();},350);
 }
 
 function checkDictee(){
@@ -489,42 +494,33 @@ function checkDictee(){
   const raw=inp.value.trim().toLowerCase();
   if(!raw)return;
   const w=JSON.parse(inp.dataset.word);
-  // Allow with or without article
-  const correct=w.en.toLowerCase();
-  const correctNoArt=correct.replace(/^(a |an |the )/,'');
+  const correct=w.en.toLowerCase().replace(/^(a |an |the )/,''); // allow without article
   const typed=raw.replace(/^(a |an |the )/,'');
   clearTimer();
 
   function lev(a,b){const m=a.length,n=b.length,dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i?j?0:i:j));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return dp[m][n];}
 
-  const dist=lev(typed,correctNoArt);
-  const isExact=(typed===correctNoArt||raw===correct);
-  const isClose=!isExact && dist<=2 && correctNoArt.length>3;
-
-  if(isExact){
+  const dist=lev(typed,correct);
+  if(dist===0||typed===correct){
     inp.className='dict-input ok';
-    handleResult(true,w.en,w);
-  } else if(isClose){
-    // Accept but show precise spelling correction
+    handleResult(true,w.en,w,false);
+  } else if(dist<=2&&correct.length>4){
     inp.className='dict-input near';
     SFX.near(); doFlash('ok');
     S.streak++;S.correct++;
     if(S.streak>S.maxStreak)S.maxStreak=S.streak;
     G.xp+=5; saveG(); updateHUD();
-    // Precise diff message
-    const note=`⚠️ Spelling: "${raw}" → correct: "${w.en}"`;
-    showFb(true,'Accepted! +5 XP',`✅ ${w.en} = ${w.fr}`, note);
-    if(w.ex) showExample(w.ex);
+    showFb(true,'Close! +5 XP',`✅ ${w.en} (${w.fr})`,'⚠️ Check your spelling!');
+    if(w.ex)showExample(w.ex);
     S.waiting=true;
   } else {
     inp.className='dict-input bad';
-    scheduledSpeak(w.en, 700);
-    handleResult(false,w.en,w);
+    handleResult(false,w.en,w,false);
   }
 }
 
-/* ── QCM ── */
-function buildQCM(correct,wrongs,word){
+/* ── QCM builder ── */
+function buildQCM(correct, wrongs, word){
   const grid=document.getElementById('ansGrid'); grid.innerHTML='';
   const keys=['A','B','C','D'];
   shuffle([correct,...wrongs]).forEach((opt,i)=>{
@@ -542,56 +538,41 @@ function handleAns(btn,answer,correct,word){
   document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
   const ok=answer===correct;
   if(ok) btn.classList.add('correct');
-  else{
-    btn.classList.add('wrong');
-    document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.ans===correct)b.classList.add('correct');});
-    scheduledSpeak(correct, 800);
-  }
-  handleResult(ok,correct,word);
+  else{btn.classList.add('wrong'); document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.ans===correct)b.classList.add('correct');});}
+  handleResult(ok,correct,word,false);
 }
 
-function handleResult(ok,correct,word){
+function handleResult(ok,correct,word,isType){
   setWaves(false);
   if(ok){
     S.streak++; S.correct++;
     if(S.streak>S.maxStreak)S.maxStreak=S.streak;
     G.xp+=10; saveG(); doFlash('ok'); SFX.ok();
-    const sub=word&&word.fr?`✅ ${word.en} = ${word.fr}`:'✅ Correct!';
-    const note=word&&word.def&&S.mode==='definition'?`💬 "${word.def}"`:'';
-    const enc = S.streak>=4 ? COMBO_MSGS[(S.streak-4)%COMBO_MSGS.length]
-               : ENCOURAGEMENTS[Math.floor(Math.random()*ENCOURAGEMENTS.length)];
-    showFb(true, `${enc} +10 XP`, sub, note);
-    if(word&&word.ex) showExample(`"${word.ex}"`);
-    // Christina speaks the encouragement out loud!
-    setTimeout(()=>speak(enc, false), 250);
+    const sub=word?`✅ ${word.en} = ${word.fr}`:`✅ Correct!`;
+    const note=word&&word.def&&S.mode==='definition'?`"${word.def}"`:'';
+    showFb(true,'Correct! +10 XP',sub,note);
+    if(word&&word.ex)showExample(`"${word.ex}"`);
   } else {
     S.streak=0; S.hearts=Math.max(0,S.hearts-1);
     SFX.bad(); doFlash('bad');
-    showFb(false,'Not quite!',`✅ Answer: ${correct}`,'🔊 Listen to the correct answer');
-    if(S.hearts<=0){setTimeout(()=>endGame(true),2200);return;}
+    showFb(false,'Not quite!',`✅ Answer: ${correct}`,'');
+    if(S.hearts<=0){setTimeout(()=>endGame(true),1800);return;}
   }
   updateHUD(); saveG(); S.waiting=true;
 }
 
-function nextQ(){
-  SFX.click();
-  // Cancel any pending audio before moving on
-  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
-  if(currentAudio){currentAudio.pause();currentAudio.src='';currentAudio=null;}
-  if(window.speechSynthesis)window.speechSynthesis.cancel();
-  S.idx++;S.waiting=false;renderQ();
-}
+function nextQ(){SFX.click();S.idx++;S.waiting=false;renderQ();}
 
-/* ── Replay ── */
+/* ── Replay audio ── */
 function replayAudio(){
   SFX.click();
   const q=S.questions[S.idx];
   if(!q)return;
   setWaves(true);
-  if     (S.mode==='translate')   speak(q.word.en);
-  else if(S.mode==='situation')   speak(q.spoken);
-  else if(S.mode==='definition')  speak(q.word.def);
-  else if(S.mode==='dictee')      speak(q.word.en);
+  if(S.mode==='translate')         speak(q.word.en);
+  else if(S.mode==='phrase')       speak(q.spoken);
+  else if(S.mode==='definition')   speak(q.word.def);
+  else if(S.mode==='dictee')       speak(q.word.en);
 }
 
 /* ── Sound waves ── */
@@ -610,7 +591,7 @@ function setWaves(playing){
    - dictee     → Blondie (voix différente = exercice plus difficile)
    Fallback → speechSynthesis navigateur si API inaccessible
 ══════════════════════════════════════════ */
-const EL_KEY = 'sk_bb2255c1ae1f1df84afc66d6c12ebaf689d51e902d350611';
+const EL_KEY = 'sk_f417a97d8f080d5eeb97d16547aa6bef6ec1c8f33101670d';
 const EL_VOICES = {
   christina : 'hpp4J3VqNfWAUOO0d1Us',
   male_brit : 'CwhRBWXzGAHq8TQ4Fs17',
@@ -628,42 +609,19 @@ function voiceForMode(mode){
   return EL_VOICES.christina;
 }
 
-// Speech rate by mode
-function rateForMode(mode){
-  if(mode==='definition') return 0.82;
-  if(mode==='situation')  return 0.78;
-  if(mode==='dictee')     return 0.75;
-  return 0.92; // translate: energetic, natural pace
-}
+async function speak(t){
+  // Stop any current playback
+  if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  setWaves(true);
 
-// Encouragement messages — short, punchy, professional
-const ENCOURAGEMENTS=[
-  "Well done!", "Excellent!", "Keep it up!", "Great work!",
-  "Spot on!", "Brilliant!", "You've got it!", "Nice one!",
-  "Perfect!", "Outstanding!", "Sharp ears!", "Nailed it!"
-];
-const COMBO_MSGS=["Amazing streak!","On fire!","Unstoppable!","Top student!"];
-let speakingQuestion = false; // true when speaking the question audio
-
-async function speak(t, isQuestion=false, onDone=null){
-  // Cancel any pending scheduled speak
-  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
-  // Stop current audio immediately
-  if(currentAudio){currentAudio.pause();currentAudio.src='';currentAudio=null;}
-  if(window.speechSynthesis)window.speechSynthesis.cancel();
-  if(isQuestion) setWaves(true);
-
-  const voiceId  = voiceForMode(S.mode||'translate');
-  const rate     = rateForMode(S.mode||'translate');
+  const voiceId = voiceForMode(S.mode||'translate');
   const cacheKey = voiceId+'|'+t;
 
-  const done = ()=>{
-    if(isQuestion){ setWaves(false); startTimer(); } // start timer AFTER audio ends
-    if(onDone) onDone();
-  };
-
   try {
+    // Use cached blob URL if available
     let url = audioCache[cacheKey];
+
     if(!url){
       const resp = await fetch(`${EL_URL}/${voiceId}`, {
         method: 'POST',
@@ -675,46 +633,38 @@ async function speak(t, isQuestion=false, onDone=null){
         body: JSON.stringify({
           text: t,
           model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.50,
-            similarity_boost: 0.80,
-            style: 0.20,
-            use_speaker_boost: true,
-            speed: rate
-          }
+          voice_settings: { stability:0.5, similarity_boost:0.8, style:0.2, use_speaker_boost:true }
         })
       });
-      if(!resp.ok) throw new Error('EL error '+resp.status);
+
+      if(!resp.ok) throw new Error('ElevenLabs API error: '+resp.status);
       const blob = await resp.blob();
       url = URL.createObjectURL(blob);
-      audioCache[cacheKey] = url;
+      audioCache[cacheKey] = url; // cache for replay
     }
+
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.onended = ()=>{ if(isQuestion) setWaves(false); currentAudio=null; done(); };
-    audio.onerror = ()=>{ if(isQuestion) setWaves(false); speakFallback(t, done); };
-    await audio.play();
-  } catch(err){
-    console.warn('ElevenLabs unavailable:', err);
-    speakFallback(t, done);
+    audio.onended = () => { setWaves(false); currentAudio=null; };
+    audio.onerror = () => { setWaves(false); speakFallback(t); };
+    audio.play();
+
+  } catch(err) {
+    console.warn('ElevenLabs unavailable, using browser TTS:', err);
+    speakFallback(t);
   }
 }
 
-function scheduledSpeak(t, delay=350, isQuestion=false){
-  if(speakTimer){clearTimeout(speakTimer);speakTimer=null;}
-  speakTimer=setTimeout(()=>{ speakTimer=null; speak(t, isQuestion); }, delay);
-}
-
 // Fallback: browser speechSynthesis
-function speakFallback(t, done=null){
-  if(!window.speechSynthesis){ setWaves(false); if(done)done(); return; }
+function speakFallback(t){
+  if(!window.speechSynthesis){ setWaves(false); return; }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(t);
-  u.lang='en-GB'; u.rate=.88; u.pitch=1.05;
+  u.lang='en-GB'; u.rate=.82; u.pitch=1.05;
   const voices=window.speechSynthesis.getVoices();
   const v=voices.find(v=>v.lang.startsWith('en-GB'))||voices.find(v=>v.lang.startsWith('en'));
   if(v) u.voice=v;
-  u.onend=()=>{ setWaves(false); if(done)done(); };
+  u.onend=()=>setWaves(false);
   window.speechSynthesis.speak(u);
 }
 window.speechSynthesis&&(window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices());
@@ -742,13 +692,7 @@ function timeOut(){
   setWaves(false);
   S.streak=0;S.hearts=Math.max(0,S.hearts-1);
   SFX.bad();doFlash('bad');updateHUD();saveG();
-  // Speak correct answer on timeout
-  const q=S.questions[S.idx];
-  if(q){
-    const correct = S.mode==='translate'?q.word.en:S.mode==='dictee'?q.word.en:S.mode==='situation'?q.answer:q.word.en;
-    setTimeout(()=>speak(correct),500);
-  }
-  showFb(false,"Time's up! ⏱️","🔊 Listen to the correct answer",'');
+  showFb(false,"Time's up! ⏱️","Tap 🔊 to hear again next time",'');
 }
 
 /* ── HUD ── */
